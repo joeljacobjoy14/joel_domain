@@ -13,7 +13,7 @@ from matplotlib import pyplot as plt
 class resistance_calc(object):
     
     def __init__(self):
-        print("init")
+        print("initiate")
         self.vol = None
         self.l = None
         self.b = None
@@ -41,7 +41,7 @@ class resistance_calc(object):
         v : velocity in m/s
         l : characteristic length in m
         mu : kinematic viscosity in si """
-        nu = 1.188* (10**-6)
+        nu = 1.18831*(10**-6)
         return (self.v * self.l) / nu
 
     
@@ -51,7 +51,9 @@ class resistance_calc(object):
            calculated the coefficient of frictional resistance
            rn : reynolds no. in SI """
            rn = self.reynolds_no()
-           return 0.075/((math.log10(rn) - 2)**2)
+           cf = 0.075/((math.log10(rn) - 2)**2)
+           print("rn : %0.3f, cf : %0.5f"%(rn, cf))
+           return cf
  
     def wetarea(self):
            """calculates the total wetted surface area"""  
@@ -59,18 +61,22 @@ class resistance_calc(object):
            bt = self.b/self.t# B/T
            ac = self.abt/ cb#Abt/Cb
            S = self.l*((2*self.t)+ self.b)*math.sqrt(self.cm)*((0.453+(0.4425*\
-cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
+               cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
+           
            return S    
              
     def RF(self):
          """ Calculates frictional resistance"""    
          rho = 1.025
          S = self.wetarea()
+         print("S:%0.3f"%S)
          #print(round(S, 2))
-         cf = self.fric_coeff()
+         cf = round(self.fric_coeff(),5)
         # print('the coeff of friction is :',cf)
         # print (0.5 * cf * rho * S * (self.v**2))
-         return 0.5 * cf * rho * S * (self.v**2)
+         rf = 0.5 * cf * rho * S * (self.v**2)
+         
+         return rf
      
     def AM(self):
          """
@@ -137,8 +143,10 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
          lr = self.LR()
          cp = self.CP()
          
-         return c13*(0.93 + (c12*((self.b/lr)**0.92497))*((0.95-cp)**\
+         ff = c13*(0.93 + (c12*((self.b/lr)**0.92497))*((0.95-cp)**\
                              (-0.521448))*(1-cp+0.0225*self.lcb)**0.6906)
+         
+         return ff
          
      #def K2(sapp) :
         # r1 = float (input('k2 value for rudder behind skeg  1.5...2.0'))
@@ -154,11 +162,10 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
          rho : density of sea water in t/m3
          """
          rho = 1.025
-         k2 = float(input('enter value for 1+k2 (1.5)'))
-         rn = self.reynolds_no()
          cf = self.fric_coeff()
-         return 0.5*rho*(self.v**2)*self.sapp*k2*cf
-     
+         rapp = 0.5*rho*(self.v**2)*self.sapp*self.k2*cf
+         
+         return rapp
     def IE(self):
          
          """
@@ -178,7 +185,9 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
          a1 = -(self.l/self.b)**0.80856 *((1-self.cwp)**0.30484)*((1-\
                cp-(0.0225*self.lcb))**0.6367)* ((lr/self.b)**0.34574)*\
                (((100 * self.vol)/(self.l**3))**0.16302)   
-         return 1 +(89 * math.exp(a1))
+         ie = round (1 +(89 * math.exp(a1)),2)
+         print(" ie = ",ie )
+         return ie
      
     def C7(self):
          if self.b/self.l < 0.11:
@@ -191,7 +200,8 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
     def C1(self):
          
          ie = self.IE()
-         c7 = self.C7()
+         c7 = round(self.C7(),4)
+         print("c7 = ",c7)
          return 2223105 *(c7**3.78613) *((self.t/self.b)**1.07961)*((90-ie)\
                                                                 **(-1.37565))
      
@@ -229,12 +239,16 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
          v : velocity of ship in m/s
          l : lwl m
          """
-         return self.v/math.sqrt(9.81*self.l)
+         fn = self.v/math.sqrt(9.81*self.l)
+         return fn
      
     def M2(self):
          c15 = self.C15()
-         cp = self.CP()
-         fn = self.FN() 
+         print("c15 = ", c15)
+         cp = round(self.CP(),4)
+         print("cp = ", cp)
+         fn = round(self.FN(),4) 
+         print("the froude number calculated  : ",round(fn,4))
          return c15*(cp**2)*(math.exp(-0.1*(fn**-2)))
      
     def LAMBDA(self):
@@ -264,21 +278,28 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
          rho is taken as 1.025 t/m3
          """
          rho = 1.025
-         c1 = self.C1()
-         c2 = self.C2()
-         c5 = 1-(0.8*self.at/(self.b*self.t*self.cm))
-         m1 = self.M1()
-         m2 = self.M2()
+         c1 = round(self.C1(),3)
+         print("c1 = ", c1)
+         c2 = round(self.C2(),4)
+         print("c2 = ", c2)
+         c5 = round(1-(0.8*self.at/(self.b*self.t*self.cm)),4)
+         print("c5 = ", c5)
+         m1 = round(self.M1(),4)
+         print("m1 = ", m1)
+         m2 = round(self.M2(),5)
+         print("m2 = ", m2)
          fn = self.FN()
-         lam = self.LAMBDA()
-         return c1*c2*c5*self.vol*rho*9.81*math.exp(m1*(fn**-0.9)+ \
+         lam = round(self.LAMBDA(),4)
+         print("lambda= ", lam)
+         rw = c1*c2*c5*self.vol*rho*9.81*math.exp(m1*(fn**-0.9)+ \
                                                m2*math.cos(lam*(fn ** -2)))
-     
+         
+         return rw
     def PB(self):
          return 0.56*math.sqrt(self.abt)/(self.tf - 1.5*self.hb)
      
     def FNI(self):
-         return self.v/math.sqrt(9.81*(self.tf-self.hb-(0.25*\
+         return self.v/math.sqrt(9.80665*(self.tf-self.hb-(0.25*\
                                         math.sqrt(self.abt)))+0.15*(self.v**2))
      
     def RB(self):
@@ -291,16 +312,21 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
          rho is taken as 1.025 t/m3
          """
          rho = 1.025
-         pb = self.PB()
-         fni = self.FNI()    
-         return 0.11*math.exp(-3*(pb**-2))*(fni**3)*\
-                        (self.abt**1.5)*rho*9.81/(1+ (fni**2))
+         pb =round(self.PB(),4)
+         print("pb = ",pb)
+         fni = round(self.FNI(),4) 
+         print("fni= ", fni)
+         rb = 0.11*math.exp(-3*(pb**-2))*(fni**3)*\
+                        (self.abt**1.5)*rho*9.80665/(1+ (fni**2))
+          
+         return rb                 
                                               
     def FNT(self):
-         return self.v/math.sqrt(2*9.81*self.at/(self.b+self.b*self.cwp))
+         return self.v/math.sqrt(2*9.8066*self.at/(self.b+self.b*self.cwp))
      
     def C6(self):
-         fnt = self.FNT()
+         fnt = round(self.FNT(),3)
+         print("fnt = ", fnt)
          if fnt >= 5:
              return 0
          else:
@@ -309,7 +335,9 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
     def RTR(self):
         rho = 1.025
         c6 = self.C6()
-        return 0.5*rho*(self.v**2)*self.at*c6
+        rtr = 0.5*rho*(self.v**2)*self.at*c6
+        
+        return rtr
      
     def C4(self):
          if self.tf/self.l <= 0.04:
@@ -319,6 +347,7 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
          
     def CA(self):    
          cb = self.CB()
+         print("block coefficient is  = ",round(cb,3))
          c2 = self.C2()
          c4 = self.C4()
          return 0.006*((self.l+100)**-0.16)- 0.00205 + 0.003*\
@@ -326,12 +355,14 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
       
     def RA(self):
         rho = 1.025
-        ca = self.CA()
-        s = self.wetarea()
-        return 0.5*rho*(self.v**2)*s*ca
+        ca = round(self.CA(),6)
+        print("ca = ", ca)
+        s = round(self.wetarea(),2)
+        ra = 0.5*rho*(self.v**2)*s*ca
+       
+        return ra
      
     def RTOT(self):
-        rho = 1.025
         rf = self.RF()
         k1 = self.FF()
         rapp = self.RAPP()
@@ -339,11 +370,19 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
         rb = self.RB()
         rtr = self.RTR()
         ra = self.RA() 
+        print("the frictional resistance is  : ",round(rf,2))
+        print("the form factor 1+ k1 is      : ",round(k1,3))
+        print("the appendage resistance is   : ",round(rapp,3))
+        print("the wave making resistance is : ",round(rw,2))
+        print("the bulbous bow resistance is : ",round(rb,3))
+        print("the transom  resistance is    : ",round(rtr,3))
+        print("the model resistance is       : ",round(ra,2))
+        
         return rf*k1 + rapp + rw + rb + rtr + ra
    
     def Calculate(self):
            Rt = self.RTOT()
-           print("the total resistance is : ",Rt)
+           print("the total resistance is       : %0.3f"%Rt)
    
 if __name__ == "__main__":
     
@@ -367,6 +406,7 @@ if __name__ == "__main__":
      res1.sapp = 50
      res1.cstern = 10
      res1.v = 12.86
+     res1.k2 = 1.5
 
      res1.Calculate()
      print("finish")
