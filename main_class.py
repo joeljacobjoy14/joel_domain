@@ -274,13 +274,14 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
          return c1*c2*c5*self.vol*rho*9.81*math.exp(m1*(fn**-0.9)+ \
                                                m2*math.cos(lam*(fn ** -2)))
      
-    def PB(self, abt, tf, hb):
-         return 0.56*math.sqrt(abt)/(tf - 1.5*hb)
+    def PB(self):
+         return 0.56*math.sqrt(self.abt)/(self.tf - 1.5*self.hb)
      
-    def FNI(self, v, tf, hb, abt):
-         return v/math.sqrt(9.81*(tf-hb-(0.25*math.sqrt(abt)))+0.15*(v**2))
+    def FNI(self):
+         return self.v/math.sqrt(9.81*(self.tf-self.hb-(0.25*\
+                                        math.sqrt(self.abt)))+0.15*(self.v**2))
      
-    def RB(self, v, tf, hb, abt, rho=1.025):
+    def RB(self):
          """ 
          calculates additonal resistance of bulbous bow at the surface
          v : velocity of ship in m/s
@@ -289,10 +290,11 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
          abt : transverse bulb area
          rho is taken as 1.025 t/m3
          """
-         self.pb = self.PB(abt, tf, hb)
-         self.fni = self.FNI(v, tf, hb, abt)    
+         rho = 1.025
+         pb = self.PB()
+         fni = self.FNI()    
          return 0.11*math.exp(-3*(pb**-2))*(fni**3)*\
-                                              (abt**1.5)*rho*9.81/(1+ (fni**2))
+                        (self.abt**1.5)*rho*9.81/(1+ (fni**2))
                                               
     def FNT(self):
          return self.v/math.sqrt(2*9.81*self.at/(self.b+self.b*self.cwp))
@@ -304,44 +306,43 @@ cb))-(0.2862*self.cm)-(0.003467*bt)+(0.3696*self.cwp))+(2.38*ac)
          else:
              return 0.2*(1-0.2*fnt)
      
-    def RTR(self, v, b, cwp, at, rho=1.025):
-         self.c6 = C6(v, at, b, cwp)
-         return 0.5*rho*(v**2)*at*c6
+    def RTR(self):
+        rho = 1.025
+        c6 = self.C6()
+        return 0.5*rho*(self.v**2)*self.at*c6
      
-    def C4(self, l, tf):
-         if tf/l <= 0.04:
-             return tf/l
+    def C4(self):
+         if self.tf/self.l <= 0.04:
+             return self.tf/self.l
          else:
              return 0.04
          
-    def CA(self, vol, l, b, t, tf, abt, hb):    
-         self.cb = CB(vol, l, b, t)
-         self.c2 = C2(b, t, tf, abt, hb)
-         self.c4 = C4(l, tf)
-         return 0.006*((l+100)**-0.16)- 0.00205 + 0.003*\
-                math.sqrt(l/7.5)*(cb**4)*c2*(0.04-c4)
+    def CA(self):    
+         cb = self.CB()
+         c2 = self.C2()
+         c4 = self.C4()
+         return 0.006*((self.l+100)**-0.16)- 0.00205 + 0.003*\
+                math.sqrt(self.l/7.5)*(cb**4)*c2*(0.04-c4)
       
-    def RA(self, vol, l, b, t, tf, cm, cwp, abt, hb, v, rho=1.025):
-         self.ca = CA(vol, l, b, t, tf, abt, hb)
-         self.s = wetarea(vol, l, t, b, cm, cwp, abt)
-         return 0.5*rho*(v**2)*s*ca
+    def RA(self):
+        rho = 1.025
+        ca = self.CA()
+        s = self.wetarea()
+        return 0.5*rho*(self.v**2)*s*ca
      
-    def RTOT(self, vol, l, b, t, cm, lcb, cwp, tf, abt, hb, sapp, at, v, Cstern, \
-                                                                    rho=1.025):
-         self.rf = RF(vol, l, t, b, cm, cwp, abt, v)
-         self.k1 = FF(vol, l, b, t, cm, lcb, Cstern)
-         self.rapp = RAPP(l, v, sapp, rho)
-         self.rw = RW(vol, l, b, t, cm, lcb, cwp, tf, abt, hb, at, v, rho)
-         self.rb = RB(v, tf, hb, abt, rho)
-         self.rtr = RTR(v, b, cwp, at, rho)
-         self.ra = RA(vol, l, b, t, tf, cm, cwp, abt, hb, v, rho) 
-# =============================================================================
-# =============================================================================
-         return rf*k1 + rapp + rw + rb + rtr + ra
+    def RTOT(self):
+        rho = 1.025
+        rf = self.RF()
+        k1 = self.FF()
+        rapp = self.RAPP()
+        rw = self.RW()
+        rb = self.RB()
+        rtr = self.RTR()
+        ra = self.RA() 
+        return rf*k1 + rapp + rw + rb + rtr + ra
    
     def Calculate(self):
-           self.Rt = self.RTOT(vol, l, b, t, cm, lcb, cwp, tf, abt, \
-                               hb, sapp, at, v, Cstern, rho=1.025)
+           Rt = self.RTOT()
            print("the total resistance is : ",Rt)
    
 if __name__ == "__main__":
@@ -367,7 +368,7 @@ if __name__ == "__main__":
      res1.cstern = 10
      res1.v = 12.86
 
-     #res1.Calculate()
+     res1.Calculate()
      print("finish")
 
 
