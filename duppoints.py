@@ -1,37 +1,64 @@
 import csv
-import string
-
-
-
-def duppoints(filepath, xloc = 0):
-    with open(filepath, 'r') as _file:
-        
-        x = filepath
-        linelist = _file.readlines()
+import string, math
+def pltpointlist(ptlist):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    pointarr = np.array(ptlist)
+    plt.plot(pointarr[:,1], pointarr[:,2], 'o-')
+    plt.show()
+def genPointList(csvpath):
+    with open(csvpath, 'r') as _mod:
+        linelist = _mod.readlines()
         pointslist = [(float(x.strip()), float(y.strip()),float(z.strip()) )\
            for(x,y,z) in [ v.strip().split(",")  for v  in linelist ]]
-        out_file = open('%smodified'%x, 'w')
-        pt = pointslist[0]
-        out_file.write("%0.3f, %0.3f , %0.3f\n" %(pt.X, pt.Y, pt.Z))
-        
-        for t in pointslist:
-            for i in range(pointslist):
-                
-                y1 = temp.y
-                z1 = temp.z
-                y2 = t[i+1].y
-                z2 = t[i+1].z
-                if((math.sqrt((y1-y2)**2 + (z1-z2)**2) <= 10**-3)):
-                    print("duplicate point")
-                else:               
-                    out_file.write(t[i+1])
-        out_file.close()
-    _file.close()
+    return pointslist
+
+filepath = r"C:\Users\Admaren02\Desktop\ship sections\aft\xlocation900.00.csv"
+with open(filepath, 'r') as _file:
     
+    
+    linelist = _file.readlines()
+    pointslist = [(float(x.strip()), float(y.strip()),float(z.strip()) )\
+       for(x,y,z) in [ v.strip().split(",")  for v  in linelist ]]
+    out_file = open('%smodified.csv'%filepath, 'w')
+    print("the previous section")
+    print(pointslist)
+    pltpointlist(pointslist)
+    pt = pointslist[0]
+                                                                            
+   # out_file.write("%0.3f, %0.3f , %0.3f\n" %(pt.X, pt.Y, pt.Z))
+  #  pltpointlist(pointslist)
+    for ptno, t in enumerate(pointslist[1:]):
+
+        y1 = pt[1]
+        z1 = pt[2]
+        y2 = t[1]
+        z2 = t[2]
+        
+        dist = math.sqrt((y1-y2)**2 + (z1-z2)**2)
+        if dist  <.0001:
+            pass
+        else:
+            out_file.write("{0:.3f},{1:.3f},{2:.3f}\n".format(pt[0], pt[1], pt[2]))
             
+        pt = t
+        if ptno == len(pointslist) - 2:
+            out_file.write("{0:.3f},{1:.3f},{2:.3f}\n".format(pt[0], pt[1], pt[2]))
+            out_file.close()
+            
+    print("new section is ")
+    modpoints = genPointList('%smodified.csv'%filepath)
+    print(modpoints)
+#    print("the modified section is")
+    pltpointlist(modpoints)
+
+    
+_file.close()
+
+        
                 
-            
-            
+
             
             
                 
@@ -42,4 +69,4 @@ def duppoints(filepath, xloc = 0):
 
 if __name__== "__main__":
     
-    duppoints(r"C:\Users\Admaren02\Desktop\ship sections\aft\xlocation900.00.csv")
+    filepath = r"C:\Users\Admaren02\Desktop\ship sections\aft\xlocation900.00.csv"
